@@ -89,6 +89,8 @@ defmodule Tds.TestHelper do
 
   def sqlcmd(params, sql, args \\ []) do
     args = [
+      # Trust server certs
+      "-C",
       "-U",
       params[:username],
       "-P",
@@ -116,8 +118,11 @@ case Tds.TestHelper.sqlcmd(opts, """
      END;
      CREATE DATABASE [#{database}];
      """) do
-  {"", 0} -> :ok
-  _ -> raise RuntimeError, "Initalizing database failed. Is the database server running?"
+  {"", 0} ->
+    :ok
+
+  {err, _} ->
+    raise RuntimeError, "Failed to create database '#{database}' due #{err}"
 end
 
 {"Changed database context to 'test'." <> _, 0} =
